@@ -9,4 +9,38 @@ public class FileModels {
     private long mFileSize;
     private short mTypeRecord;
     private short mFileType;
+
+    public FileModels(String name, short typeRecord) {
+        mName = name;
+        mTypeRecord = typeRecord;
+    }
+
+    public FileModels(String name, long fileSize, short typeRecord) {
+        mName = name;
+        mFileSize = fileSize;
+        mTypeRecord = typeRecord;
+    }
+
+    public FileModels(String name, long fileSize, short typeRecord, short fileType) {
+        mName = name;
+        mFileSize = fileSize;
+        mTypeRecord = typeRecord;
+        mFileType = fileType;
+    }
+
+    public String getName() {
+        return mName;
+    }
+
+    public long getFileSize() {
+        return mFileSize;
+    }
+
+    public short getTypeRecord() {
+        return mTypeRecord;
+    }
+
+    public short getFileType() {
+        return mFileType;
+    }
 }
