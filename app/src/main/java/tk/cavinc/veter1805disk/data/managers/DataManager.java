@@ -3,6 +3,7 @@ package tk.cavinc.veter1805disk.data.managers;
 import android.content.Context;
 
 import java.util.ArrayList;
+import java.util.Stack;
 
 import tk.cavinc.veter1805disk.BuildConfig;
 import tk.cavinc.veter1805disk.data.models.FileModels;
@@ -19,6 +20,8 @@ public class DataManager {
 
     private ArrayList<FileModels> mFileModels;
 
+    private Stack<String> mPathStack;
+
     public static DataManager getInstance() {
         if (INSTANCE==null){
             INSTANCE = new DataManager();
@@ -28,6 +31,8 @@ public class DataManager {
 
     public DataManager(){
         mContext = App.getContext();
+        mPathStack = new Stack<>();
+        mFileModels = new ArrayList<>();
     }
 
     // версия программы
@@ -49,5 +54,17 @@ public class DataManager {
 
     public int getFilesStorageSize(){
         return mFileModels.size();
+    }
+
+    public String popPathStack(){
+        return mPathStack.pop();
+    }
+
+    public void pushPathStack(String path){
+        mPathStack.push(path);
+    }
+
+    public int sizePathStack(){
+        return mPathStack.size();
     }
 }

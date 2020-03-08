@@ -2,7 +2,9 @@ package tk.cavinc.veter1805disk.ui.activites;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
@@ -24,6 +26,7 @@ import tk.cavinc.veter1805disk.R;
 import tk.cavinc.veter1805disk.data.managers.DataManager;
 import tk.cavinc.veter1805disk.data.models.FileModels;
 import tk.cavinc.veter1805disk.ui.adapters.FilesAdapter;
+import tk.cavinc.veter1805disk.ui.helpers.FilesItemClickListener;
 import tk.cavinc.veter1805disk.utils.ConstantManager;
 
 public class MainActivity extends AppCompatActivity {
@@ -42,8 +45,17 @@ public class MainActivity extends AppCompatActivity {
         mDataManager = DataManager.getInstance();
 
         mRecyclerView = findViewById(R.id.lv);
-        GridLayoutManager grid = new GridLayoutManager(this,2);
+        GridLayoutManager grid = new GridLayoutManager(this,2,LinearLayoutManager.VERTICAL,false);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+
+        //mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setLayoutManager(grid);
+
+        //mRecyclerView.addItemDecoration(new LineDividerItemDecoration(this, R.drawable.line_divider))
+
+        RecyclerView.ItemAnimator itemAnimator = new DefaultItemAnimator();
+        mRecyclerView.setItemAnimator(itemAnimator);
+        mRecyclerView.setHasFixedSize(true);
 
         client = new OkHttpClient();
     }
@@ -51,12 +63,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        getFiles();
+        getFiles("/");
     }
 
     private void updateUI(){
         if (mAdapter == null) {
-            mAdapter = new FilesAdapter(this,mDataManager.getFileModels());
+            mAdapter = new FilesAdapter(this,mDataManager.getFileModels(),mFilesItemClickListener);
             mRecyclerView.setAdapter(mAdapter);
         } else {
             mAdapter.setData(mDataManager.getFileModels());
@@ -65,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void getFiles(){
+    private void getFiles(String path){
         String json = "{\"path\":\"/\"}";
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
 
@@ -110,4 +122,23 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    FilesItemClickListener mFilesItemClickListener = new FilesItemClickListener() {
+        @Override
+        public void onItemClick(int position) {
+
+        }
+
+        @Override
+        public void onItemClick(FileModels items) {
+            if (items.getTypeRecord() == ConstantManager.RECORD_DIR) {
+
+            }
+        }
+
+        @Override
+        public void onItemMoreClick(FileModels fileModels) {
+
+        }
+    };
 }
