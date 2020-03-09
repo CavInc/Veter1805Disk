@@ -33,6 +33,7 @@ public class DataManager {
         mContext = App.getContext();
         mPathStack = new Stack<>();
         mFileModels = new ArrayList<>();
+        mPathStack.push("/");
     }
 
     // версия программы
@@ -62,6 +63,10 @@ public class DataManager {
 
     public void pushPathStack(String path){
         mPathStack.push(path);
+    }
+
+    public String peekPathStack(){
+        return mPathStack.peek();
     }
 
     public int sizePathStack(){

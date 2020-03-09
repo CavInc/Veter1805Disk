@@ -1,12 +1,15 @@
 package tk.cavinc.veter1805disk.ui.activites;
 
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,6 +29,7 @@ import tk.cavinc.veter1805disk.R;
 import tk.cavinc.veter1805disk.data.managers.DataManager;
 import tk.cavinc.veter1805disk.data.models.FileModels;
 import tk.cavinc.veter1805disk.ui.adapters.FilesAdapter;
+import tk.cavinc.veter1805disk.ui.dialogs.OperationDialog;
 import tk.cavinc.veter1805disk.ui.helpers.FilesItemClickListener;
 import tk.cavinc.veter1805disk.utils.ConstantManager;
 
@@ -36,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private FilesAdapter mAdapter;
     private RecyclerView mRecyclerView;
     private OkHttpClient client;
+
+    private ActionBar actionToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +64,12 @@ public class MainActivity extends AppCompatActivity {
         mRecyclerView.setHasFixedSize(true);
 
         client = new OkHttpClient();
+
+        setupToolbar();
+    }
+
+    private void setupToolbar(){
+       actionToolbar = getSupportActionBar();
     }
 
     @Override
@@ -72,13 +84,32 @@ public class MainActivity extends AppCompatActivity {
             mRecyclerView.setAdapter(mAdapter);
         } else {
             mAdapter.setData(mDataManager.getFileModels());
-            mAdapter.notifyDataSetChanged();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mAdapter.notifyDataSetChanged();
+                }
+            });
         }
 
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            String level = mDataManager.popPathStack();
+            level = mDataManager.peekPathStack();
+            getFiles(level);
+            updateUI();
+            if (level == "/") {
+                actionToolbar.setDisplayHomeAsUpEnabled(false);
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     private void getFiles(String path){
-        String json = "{\"path\":\"/\"}";
+        String json = "{\"path\":\""+path+"\"}";
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
 
         final Request request = new Request.Builder()
@@ -132,13 +163,21 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemClick(FileModels items) {
             if (items.getTypeRecord() == ConstantManager.RECORD_DIR) {
-
+                String upLevel = mDataManager.peekPathStack();
+                upLevel = upLevel+"/"+items.getName();
+                mDataManager.pushPathStack(upLevel);
+                getFiles(upLevel);
+                updateUI();
+                if (actionToolbar != null) {
+                    actionToolbar.setDisplayHomeAsUpEnabled(true);
+                }
             }
         }
 
         @Override
         public void onItemMoreClick(FileModels fileModels) {
-
+            OperationDialog dialog = new OperationDialog();
+            dialog.show(getFragmentManager(),"OD");
         }
     };
 }
