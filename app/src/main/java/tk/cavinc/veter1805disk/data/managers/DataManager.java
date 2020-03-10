@@ -1,7 +1,9 @@
 package tk.cavinc.veter1805disk.data.managers;
 
 import android.content.Context;
+import android.os.Environment;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -45,12 +47,21 @@ public class DataManager {
         return mContext;
     }
 
+
+
     public ArrayList<FileModels> getFileModels() {
         return mFileModels;
     }
 
     public void setFileModels(ArrayList<FileModels> fileModels) {
         mFileModels = fileModels;
+        //mFileModels.sort();
+    }
+
+    // получили путь к папке загрузки
+    public File getDownloadPathInStorage(){
+        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        return path;
     }
 
     public int getFilesStorageSize(){

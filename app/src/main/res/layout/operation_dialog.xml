@@ -8,6 +8,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
     <LinearLayout
+        android:id="@+id/op_download"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -26,6 +27,8 @@
             android:layout_height="wrap_content"/>
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/op_move"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
@@ -42,6 +45,8 @@
             android:layout_height="wrap_content"/>
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/op_delete"
+        android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView

@@ -1,5 +1,9 @@
 package tk.cavinc.veter1805disk.ui.activites;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,7 +13,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.Pair;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,6 +23,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -25,6 +32,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 import tk.cavinc.veter1805disk.R;
 import tk.cavinc.veter1805disk.data.managers.DataManager;
 import tk.cavinc.veter1805disk.data.models.FileModels;
@@ -35,6 +43,7 @@ import tk.cavinc.veter1805disk.utils.ConstantManager;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MA";
+    private static final int PERMISSION_REQUEST_CODE = 218;
     private DataManager mDataManager;
 
     private FilesAdapter mAdapter;
@@ -54,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
         GridLayoutManager grid = new GridLayoutManager(this,2,LinearLayoutManager.VERTICAL,false);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
 
-        //mRecyclerView.setLayoutManager(layoutManager);
-        mRecyclerView.setLayoutManager(grid);
+        mRecyclerView.setLayoutManager(layoutManager);
+        //mRecyclerView.setLayoutManager(grid);
 
         //mRecyclerView.addItemDecoration(new LineDividerItemDecoration(this, R.drawable.line_divider))
 
@@ -75,7 +84,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        checkAndSetPrivelege();
         getFiles("/");
+    }
+
+    // проверяем и устанавливаем привеленгии
+    private void checkAndSetPrivelege(){
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_DENIED){
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},PERMISSION_REQUEST_CODE);
+        }
     }
 
     private void updateUI(){
@@ -154,6 +173,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private FileModels selectFileModel;
+
     FilesItemClickListener mFilesItemClickListener = new FilesItemClickListener() {
         @Override
         public void onItemClick(int position) {
@@ -162,12 +183,12 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onItemClick(FileModels items) {
+            // если тип файла каталог то проваливаемся внутрь
             if (items.getTypeRecord() == ConstantManager.RECORD_DIR) {
                 String upLevel = mDataManager.peekPathStack();
                 upLevel = upLevel+"/"+items.getName();
                 mDataManager.pushPathStack(upLevel);
                 getFiles(upLevel);
-                updateUI();
                 if (actionToolbar != null) {
                     actionToolbar.setDisplayHomeAsUpEnabled(true);
                 }
@@ -176,8 +197,97 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onItemMoreClick(FileModels fileModels) {
-            OperationDialog dialog = new OperationDialog();
+            selectFileModel = fileModels;
+            OperationDialog dialog = OperationDialog.newInstance(fileModels.getTypeRecord());
+            dialog.setDialogListener(mOperationDialogListener);
             dialog.show(getFragmentManager(),"OD");
         }
     };
+
+
+    OperationDialog.OperationDialogListener mOperationDialogListener = new OperationDialog.OperationDialogListener() {
+        @Override
+        public void onSelectItem(int id) {
+            switch (id){
+                case R.id.op_download:
+                    downloadFile();
+                    break;
+                case R.id.op_move:
+                    break;
+                case R.id.op_delete:
+                    deleteFileRecord();
+                    break;
+            }
+        }
+    };
+
+    // считываем
+    private void downloadFile(){
+        Request request = new Request.Builder()
+                .url(ConstantManager.BASE_URL+ConstantManager.GET_FILE_URL+selectFileModel.getName())
+                .build();
+
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.d(TAG,"CODE :"+response.code());
+                Set<String> names = response.headers().names();
+                for(String l: names){
+                    Log.d(TAG,l);
+                    Log.d(TAG,response.header(l));
+                }
+                ResponseBody body = response.body();
+            }
+        });
+
+    }
+
+    // удаляем элемент
+    private void deleteFileRecord(){
+        String json = "{\"name\":\""+mDataManager.peekPathStack()+"/"+selectFileModel.getName()+"\"}";
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
+
+        final Request request = new Request.Builder()
+                .url(ConstantManager.BASE_URL+ConstantManager.DELTE_URL)
+                .post(requestBody)
+                .build();
+
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.d(TAG,"CODE :"+response.code());
+                String result = response.body().string();
+                response.close();
+                JSONObject json;
+                try {
+                    json = new JSONObject(result);
+                    if (!json.getBoolean("status")) {
+                        Toast.makeText(MainActivity.this,json.getString("msg"),Toast.LENGTH_LONG).show();
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                getFiles(mDataManager.peekPathStack());
+            }
+
+            @Override
+            public void onFailure(Call call, final IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this,e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+                    }
+                });
+
+            }
+        });
+    }
 }

@@ -10,8 +10,9 @@ public interface ConstantManager {
 
     String BASE_URL = "http://192.168.56.10:5000";
     String GET_FILES_URL = "/api/getfiles";
-    String DELTE_URL = "";
-    String CREATE_DIR_URL = "";
-    String SEND_FILE_URL = "";
+    String DELTE_URL = "/api/deleteitem";
+    String CREATE_DIR_URL = "/api/createdir";
+    String SEND_FILE_URL = "/api/sendfile";
+    String GET_FILE_URL = "/api/getfile/";
 
 }
