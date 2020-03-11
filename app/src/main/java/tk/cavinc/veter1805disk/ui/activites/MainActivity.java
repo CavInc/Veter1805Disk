@@ -1,6 +1,7 @@
 package tk.cavinc.veter1805disk.ui.activites;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -21,7 +22,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -231,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
+                call.cancel();
                 e.printStackTrace();
             }
 
@@ -243,9 +250,36 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG,response.header(l));
                 }
                 ResponseBody body = response.body();
+                File downloadPath = mDataManager.getDownloadPathInStorage();
+
+                Log.d(TAG,downloadPath.getAbsolutePath());
+                storeFile(downloadPath,selectFileModel.getName(),body);
             }
         });
+    }
 
+    private void storeFile(File downloadPath,String fname,ResponseBody body){
+        InputStream inStr = body.byteStream();
+        FileOutputStream out;
+        BufferedInputStream bufferinstream = new BufferedInputStream(inStr);
+        File outfile = new File(downloadPath, fname);
+        Log.d(TAG,outfile.getAbsolutePath());
+        try {
+            out = new FileOutputStream(new File(downloadPath,fname));
+            int current = 0;
+            while ((current = bufferinstream.read()) != -1){
+                out.write(current);
+            }
+            out.flush();
+            out.close();
+            inStr.close();
+            body.close();
+            Log.d(TAG,"DOWNLOAD DONE");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     // удаляем элемент
@@ -280,6 +314,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call call, final IOException e) {
+                call.cancel();
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
