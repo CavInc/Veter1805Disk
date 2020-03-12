@@ -1,6 +1,8 @@
 package tk.cavinc.veter1805disk.data.managers;
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Environment;
 
@@ -66,6 +68,13 @@ public class DataManager {
     public File getDownloadPathInStorage(){
         File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         return path;
+    }
+
+    // проверяем включен ли интернетик
+    public boolean isOnline(){
+        ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);;
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     public int getFilesStorageSize(){
