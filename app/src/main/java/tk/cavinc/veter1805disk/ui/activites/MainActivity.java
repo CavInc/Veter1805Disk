@@ -15,6 +15,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.Pair;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -43,7 +45,9 @@ import tk.cavinc.veter1805disk.R;
 import tk.cavinc.veter1805disk.data.managers.DataManager;
 import tk.cavinc.veter1805disk.data.models.FileModels;
 import tk.cavinc.veter1805disk.ui.adapters.FilesAdapter;
+import tk.cavinc.veter1805disk.ui.dialogs.CreateDirDialog;
 import tk.cavinc.veter1805disk.ui.dialogs.OperationDialog;
+import tk.cavinc.veter1805disk.ui.helpers.CreateDialogListener;
 import tk.cavinc.veter1805disk.ui.helpers.FilesItemClickListener;
 import tk.cavinc.veter1805disk.utils.ConstantManager;
 
@@ -94,6 +98,16 @@ public class MainActivity extends AppCompatActivity {
         getFiles("/");
     }
 
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+
+
     // проверяем и устанавливаем привеленгии
     private void checkAndSetPrivelege(){
         if (ContextCompat.checkSelfPermission(this,
@@ -129,6 +143,15 @@ public class MainActivity extends AppCompatActivity {
             if (level == "/") {
                 actionToolbar.setDisplayHomeAsUpEnabled(false);
             }
+        }
+        if (item.getItemId() == R.id.main_menu_refresh) {
+            getFiles(mDataManager.peekPathStack());
+        }
+        // вызов диалога создания каталога на сервере
+        if (item.getItemId() == R.id.main_menu_create_folder) {
+            CreateDirDialog dirDialog = new CreateDirDialog();
+            dirDialog.setDialogListener(mCreateDialogListener);
+            dirDialog.show(getFragmentManager(),"CDD");
         }
         return super.onOptionsItemSelected(item);
     }
@@ -210,6 +233,22 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    CreateDialogListener mCreateDialogListener = new CreateDialogListener() {
+        @Override
+        public void onCreate() {
+            getFiles(mDataManager.peekPathStack());
+        }
+
+        @Override
+        public void onError(final String error) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this,error,Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+    };
 
     OperationDialog.OperationDialogListener mOperationDialogListener = new OperationDialog.OperationDialogListener() {
         @Override

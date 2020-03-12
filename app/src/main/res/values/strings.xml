@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Veter1805Disk</string>
+    <string name="dialog_no">Нет</string>
+    <string name="dialog_yes">Да</string>
 </resources>
