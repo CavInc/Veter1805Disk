@@ -43,4 +43,9 @@ public class FileModels {
     public short getFileType() {
         return mFileType;
     }
+
+    @Override
+    public String toString() {
+        return ""+mTypeRecord+"-"+mName;
+    }
 }

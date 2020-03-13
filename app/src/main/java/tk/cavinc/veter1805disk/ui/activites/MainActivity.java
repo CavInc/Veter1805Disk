@@ -182,15 +182,18 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     json = new JSONObject(result);
                     JSONArray dt = json.getJSONArray("files");
+                    long fileSize = 0;
                     for (int i=0;i< dt.length();i++) {
                         JSONObject item = dt.getJSONObject(i);
                         short fileRecType;
                         if (item.getString("type").equals("DIR")) {
                             fileRecType = ConstantManager.RECORD_DIR;
+                            fileSize = 0;
                         } else {
                             fileRecType = ConstantManager.RECORD_FILE;
+                            fileSize = item.getLong("size");
                         }
-                        rec.add(new FileModels(item.getString("name"),0,fileRecType));
+                        rec.add(new FileModels(item.getString("name"),fileSize,fileRecType));
                     }
 
                 } catch (JSONException e) {
