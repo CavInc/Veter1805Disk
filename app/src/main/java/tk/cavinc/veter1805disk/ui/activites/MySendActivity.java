@@ -95,6 +95,7 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
         }
         */
 
+
         Log.d(TAG,fileUri.toString());
         Log.d(TAG,fileUri.getEncodedPath()+" "+fileUri.getLastPathSegment());
         if (fileName != null) {
@@ -149,6 +150,9 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
             onBackPressed();
         }
         if (v.getId() == R.id.store_bt) {
+
+            String selectedFilePath = FilePath.getPath(this, fileUri);
+            Log.d(TAG,"PT :"+selectedFilePath);
 
             String fname2 = UriHelper.getInstance().getFileName(fileUri,this);
 
