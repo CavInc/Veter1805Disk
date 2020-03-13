@@ -97,8 +97,9 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
 
         Log.d(TAG,fileUri.toString());
         Log.d(TAG,fileUri.getEncodedPath()+" "+fileUri.getLastPathSegment());
-
-        Log.d(TAG,fileName);
+        if (fileName != null) {
+            Log.d(TAG, fileName);
+        }
         mEditText.setText(fileName);
         //cursor.close();
     }
