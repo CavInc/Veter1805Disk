@@ -1,19 +1,25 @@
 package tk.cavinc.veter1805disk.ui.activites;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
-import android.provider.OpenableColumns;
 import android.support.annotation.Nullable;
-import android.support.v4.content.FileProvider;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -23,18 +29,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+
 import tk.cavinc.veter1805disk.R;
 import tk.cavinc.veter1805disk.data.managers.DataManager;
 import tk.cavinc.veter1805disk.utils.ConstantManager;
-import tk.cavinc.veter1805disk.utils.FileHelper;
 import tk.cavinc.veter1805disk.utils.FilePath;
 import tk.cavinc.veter1805disk.utils.UriHelper;
 
@@ -108,10 +106,10 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
     private void sendNetFile(final File file, String fileName){
         OkHttpClient client = new OkHttpClient();
 
-        RequestBody requestBody = new MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
+        RequestBody requestBody = new MultipartBuilder()
+                .type(MultipartBuilder.FORM)
                 .addFormDataPart("file",fileName,
-                        RequestBody.create(file, MediaType.parse(typeFile)))
+                        RequestBody.create(MediaType.parse(typeFile),file))
                 .build();
 
         Request request = new Request.Builder()
@@ -123,14 +121,7 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
         call.enqueue(new Callback() {
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d(TAG,response.body().string());
-                file.delete();
-                finish();
-            }
-
-            @Override
-            public void onFailure(Call call, final IOException e) {
+            public void onFailure(Request request, final IOException e) {
                 e.printStackTrace();
                 file.delete();
                 runOnUiThread(new Runnable() {
@@ -139,6 +130,13 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
                         Toast.makeText(MySendActivity.this,e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
                     }
                 });
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+                Log.d(TAG,response.body().string());
+                file.delete();
+                finish();
             }
         });
 

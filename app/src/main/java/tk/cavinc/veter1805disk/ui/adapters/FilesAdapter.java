@@ -46,11 +46,17 @@ public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> 
         FileModels record = data.get(position);
         holder.mName.setText(record.getName());
         if (record.getTypeRecord() == ConstantManager.RECORD_DIR) {
+            holder.mImageView.setBackgroundResource(R.drawable.ic_folder_black_24dp);
+            /*
             holder.mImageView.setImageDrawable(mContext.getResources().
                     getDrawable(R.drawable.ic_folder_black_24dp,null));
+                    */
         } else {
+            holder.mImageView.setBackgroundResource(R.drawable.ic_description_black_24dp);
+            /*
             holder.mImageView.setImageDrawable(mContext.getResources().
                     getDrawable(R.drawable.ic_description_black_24dp,null));
+                    */
         }
     }
 

@@ -20,6 +20,15 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,14 +42,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Set;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import okhttp3.ResponseBody;
+
 import tk.cavinc.veter1805disk.R;
 import tk.cavinc.veter1805disk.data.managers.DataManager;
 import tk.cavinc.veter1805disk.data.models.FileModels;
@@ -171,15 +173,14 @@ public class MainActivity extends AppCompatActivity {
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override
-            public void onFailure(Call call, IOException e) {
+            public void onFailure(Request request, IOException e) {
                 e.printStackTrace();
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Response response) throws IOException {
                 Log.d(TAG,"CODE :"+response.code());
                 String result = response.body().string();
-                response.close();
                 Log.d(TAG,result);
                 JSONObject json;
                 ArrayList<FileModels> rec = new ArrayList<>();
@@ -286,14 +287,15 @@ public class MainActivity extends AppCompatActivity {
 
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
+
+
             @Override
-            public void onFailure(Call call, IOException e) {
-                call.cancel();
+            public void onFailure(Request request, IOException e) {
                 e.printStackTrace();
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onResponse(Response response) throws IOException {
                 Log.d(TAG,"CODE :"+response.code());
                 Set<String> names = response.headers().names();
                 for(String l: names){
@@ -310,7 +312,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void storeFile(File downloadPath,String fname,ResponseBody body){
-        InputStream inStr = body.byteStream();
+        InputStream inStr = null;
+        try {
+            inStr = body.byteStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         FileOutputStream out;
         BufferedInputStream bufferinstream = new BufferedInputStream(inStr);
         File outfile = new File(downloadPath, fname);
@@ -353,10 +360,19 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback() {
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
+            public void onFailure(Request request, final IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(MainActivity.this,e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
                 Log.d(TAG,"CODE :"+response.code());
                 String result = response.body().string();
-                response.close();
                 JSONObject json;
                 try {
                     json = new JSONObject(result);
@@ -369,17 +385,6 @@ public class MainActivity extends AppCompatActivity {
                 getFiles(mDataManager.peekPathStack());
             }
 
-            @Override
-            public void onFailure(Call call, final IOException e) {
-                call.cancel();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Toast.makeText(MainActivity.this,e.getLocalizedMessage(),Toast.LENGTH_LONG).show();
-                    }
-                });
-
-            }
         });
     }
 }

@@ -14,15 +14,17 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 
+import com.squareup.okhttp.Call;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+
 import java.io.IOException;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+
 import tk.cavinc.veter1805disk.R;
 import tk.cavinc.veter1805disk.data.managers.DataManager;
 import tk.cavinc.veter1805disk.ui.helpers.CreateDialogListener;
@@ -94,19 +96,19 @@ public class CreateDirDialog extends DialogFragment {
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                Log.d(TAG,"OKD");
-                Log.d(TAG,response.body().string());
-                if (mDialogListener != null){
-                    mDialogListener.onCreate();
+            public void onFailure(Request request, IOException e) {
+                e.printStackTrace();
+                if (mDialogListener != null) {
+                    mDialogListener.onError(e.getLocalizedMessage());
                 }
             }
 
             @Override
-            public void onFailure(Call call, IOException e) {
-                e.printStackTrace();
-                if (mDialogListener != null) {
-                    mDialogListener.onError(e.getLocalizedMessage());
+            public void onResponse(Response response) throws IOException {
+                Log.d(TAG,"OKD");
+                Log.d(TAG,response.body().string());
+                if (mDialogListener != null){
+                    mDialogListener.onCreate();
                 }
             }
         });
