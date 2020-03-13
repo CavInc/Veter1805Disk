@@ -197,7 +197,12 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
                 mDataManager.setFileModels(rec);
-                updateUI();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateUI();
+                    }
+                });
             }
         });
     }
@@ -314,6 +319,12 @@ public class MainActivity extends AppCompatActivity {
             inStr.close();
             body.close();
             Log.d(TAG,"DOWNLOAD DONE");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this,"Получение файла завершено",Toast.LENGTH_LONG).show();
+                }
+            });
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {

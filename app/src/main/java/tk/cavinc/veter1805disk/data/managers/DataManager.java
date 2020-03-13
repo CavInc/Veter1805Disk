@@ -8,6 +8,7 @@ import android.os.Environment;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Stack;
 
 import tk.cavinc.veter1805disk.BuildConfig;
@@ -59,9 +60,12 @@ public class DataManager {
     public void setFileModels(ArrayList<FileModels> fileModels) {
         mFileModels = fileModels;
 
+        Collections.sort(mFileModels,new FielsSort());
+        /*
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             mFileModels.sort(new FielsSort());
         }
+        */
     }
 
     // получили путь к папке загрузки

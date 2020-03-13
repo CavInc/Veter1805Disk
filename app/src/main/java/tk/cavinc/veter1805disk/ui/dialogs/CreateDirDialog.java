@@ -87,6 +87,7 @@ public class CreateDirDialog extends DialogFragment {
 
         Request request = new Request.Builder()
                 .url(ConstantManager.BASE_URL+ConstantManager.CREATE_DIR_URL)
+                .addHeader("Accept-Charset","UTF-8")
                 .post(requestBody)
                 .build();
 
