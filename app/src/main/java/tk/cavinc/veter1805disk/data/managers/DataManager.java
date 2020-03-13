@@ -74,6 +74,7 @@ public class DataManager {
         return path;
     }
 
+
     // проверяем включен ли интернетик
     public boolean isOnline(){
         ConnectivityManager cm = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);;

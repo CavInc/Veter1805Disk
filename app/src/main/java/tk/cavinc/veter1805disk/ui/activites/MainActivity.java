@@ -95,7 +95,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         checkAndSetPrivelege();
-        getFiles("/");
+        if (mDataManager.isOnline()) {
+            getFiles("/");
+        } else {
+            Toast.makeText(this,"Нет сети",Toast.LENGTH_LONG).show();
+        }
     }
 
 
