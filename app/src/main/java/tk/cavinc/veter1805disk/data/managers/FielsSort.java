@@ -6,6 +6,7 @@ import tk.cavinc.veter1805disk.data.models.FileModels;
 
 /**
  * Created by cav on 11.03.20.
+ * Сортировка списка для ArrayList
  */
 
 class FielsSort implements java.util.Comparator<FileModels> {

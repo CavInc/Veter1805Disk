@@ -19,6 +19,7 @@ import tk.cavinc.veter1805disk.utils.ConstantManager;
 
 /**
  * Created by cav on 07.03.20.
+ * адаптер для показа списка файлов
  */
 
 public class FilesAdapter extends RecyclerView.Adapter<FilesAdapter.ViewHolder> {

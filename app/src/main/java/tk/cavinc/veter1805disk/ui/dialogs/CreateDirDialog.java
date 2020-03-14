@@ -10,8 +10,6 @@ import android.support.v7.app.AlertDialog;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.EditText;
 
 import com.squareup.okhttp.Call;
@@ -32,6 +30,7 @@ import tk.cavinc.veter1805disk.utils.ConstantManager;
 
 /**
  * Created by cav on 12.03.20.
+ * диалог создания каталога на сервере
  */
 
 public class CreateDirDialog extends DialogFragment {
@@ -45,6 +44,8 @@ public class CreateDirDialog extends DialogFragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        // таким образом мы может получить ссылку на слушателя если он объявлен как импрементация
+        // в активности (implements CreateDialogListener)
         try {
             mDialogListener = (CreateDialogListener) getActivity();
         } catch (Exception e){
@@ -76,11 +77,12 @@ public class CreateDirDialog extends DialogFragment {
         return builder.create();
     }
 
+    // получили ссылку на слушателя
     public void setDialogListener(CreateDialogListener listener){
         mDialogListener = listener;
     }
 
-    // создаем каталог на сервере
+    // создаем каталог на сервере с использованием okhttpclient
     private void createRemoteDir(){
         String name = mName.getText().toString();
         OkHttpClient client = new OkHttpClient();
@@ -98,6 +100,7 @@ public class CreateDirDialog extends DialogFragment {
             @Override
             public void onFailure(Request request, IOException e) {
                 e.printStackTrace();
+                // если слушаетель объявлен дергаем метод
                 if (mDialogListener != null) {
                     mDialogListener.onError(e.getLocalizedMessage());
                 }
@@ -107,6 +110,7 @@ public class CreateDirDialog extends DialogFragment {
             public void onResponse(Response response) throws IOException {
                 Log.d(TAG,"OKD");
                 Log.d(TAG,response.body().string());
+                // если слушаетель объявлен дергаем метод
                 if (mDialogListener != null){
                     mDialogListener.onCreate();
                 }

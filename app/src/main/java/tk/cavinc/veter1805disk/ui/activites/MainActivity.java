@@ -53,14 +53,18 @@ import tk.cavinc.veter1805disk.ui.helpers.CreateDialogListener;
 import tk.cavinc.veter1805disk.ui.helpers.FilesItemClickListener;
 import tk.cavinc.veter1805disk.utils.ConstantManager;
 
+/**
+ * главная активность приложениея
+ */
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MA";
     private static final int PERMISSION_REQUEST_CODE = 218;
-    private DataManager mDataManager;
+    private DataManager mDataManager; // менеджер даннных
 
-    private FilesAdapter mAdapter;
-    private RecyclerView mRecyclerView;
-    private OkHttpClient client;
+    private FilesAdapter mAdapter; // адаптер с данными о файлах
+    private RecyclerView mRecyclerView; // виджет для показа списка
+    private OkHttpClient client;  // сетевой клиент для собственно работы с сервером
 
     private ActionBar actionToolbar;
 
@@ -69,13 +73,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mDataManager = DataManager.getInstance();
+        mDataManager = DataManager.getInstance(); // создали или получили экземпляр из синглтона
 
         mRecyclerView = findViewById(R.id.lv);
+
         GridLayoutManager grid = new GridLayoutManager(this,2,LinearLayoutManager.VERTICAL,false);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
 
-        mRecyclerView.setLayoutManager(layoutManager);
+        mRecyclerView.setLayoutManager(layoutManager); // установили менеджер размещения элементов
         //mRecyclerView.setLayoutManager(grid);
 
         //mRecyclerView.addItemDecoration(new LineDividerItemDecoration(this, R.drawable.line_divider))
@@ -96,7 +101,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // проверка привелегий
         checkAndSetPrivelege();
+        // проверим наличие сети и если нет прогураемся
         if (mDataManager.isOnline()) {
             getFiles("/");
         } else {
@@ -123,12 +130,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // обновляем или создаем адаптер для показа данных
     private void updateUI(){
         if (mAdapter == null) {
             mAdapter = new FilesAdapter(this,mDataManager.getFileModels(),mFilesItemClickListener);
             mRecyclerView.setAdapter(mAdapter);
         } else {
             mAdapter.setData(mDataManager.getFileModels());
+            // делаем таким образом потому что может вызываться из не главной нити приложения
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -162,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    // получаем список файлов с сервера используя okhttpclient
     private void getFiles(String path){
         String json = "{\"path\":\""+path+"\"}";
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
@@ -217,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
 
     private FileModels selectFileModel;
 
+    // обработчик собыйтий от списка файлов
     FilesItemClickListener mFilesItemClickListener = new FilesItemClickListener() {
         @Override
         public void onItemClick(int position) {
@@ -246,6 +257,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    // обработчик событий от диалога создания каталога
     CreateDialogListener mCreateDialogListener = new CreateDialogListener() {
         @Override
         public void onCreate() {
@@ -262,7 +274,7 @@ public class MainActivity extends AppCompatActivity {
             });
         }
     };
-
+    // обработчик событий от диалога операций над файлом
     OperationDialog.OperationDialogListener mOperationDialogListener = new OperationDialog.OperationDialogListener() {
         @Override
         public void onSelectItem(int id) {
@@ -279,7 +291,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    // считываем
+    // считываем файл с сервера используя okhttp
     private void downloadFile(){
         Request request = new Request.Builder()
                 .url(ConstantManager.BASE_URL+ConstantManager.GET_FILE_URL+selectFileModel.getName())
@@ -287,8 +299,6 @@ public class MainActivity extends AppCompatActivity {
 
         Call call = client.newCall(request);
         call.enqueue(new Callback() {
-
-
             @Override
             public void onFailure(Request request, IOException e) {
                 e.printStackTrace();
@@ -311,6 +321,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // сохраняем полученный файл в хранилище на устройстве. (в каталог Downdloads/Загрузки
     private void storeFile(File downloadPath,String fname,ResponseBody body){
         InputStream inStr = null;
         try {
@@ -332,7 +343,6 @@ public class MainActivity extends AppCompatActivity {
             out.close();
             inStr.close();
             body.close();
-            Log.d(TAG,"DOWNLOAD DONE");
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -346,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // удаляем элемент
+    // удаляем элемент на сервере с использованием okhttpclient
     private void deleteFileRecord(){
         String json = "{\"name\":\""+mDataManager.peekPathStack()+"/"+selectFileModel.getName()+"\"}";
         RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);

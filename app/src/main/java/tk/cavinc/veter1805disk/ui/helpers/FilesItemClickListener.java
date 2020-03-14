@@ -4,6 +4,7 @@ import tk.cavinc.veter1805disk.data.models.FileModels;
 
 /**
  * Created by cav on 08.03.20.
+ * интерфейс слушателя для адаптера
  */
 
 public interface FilesItemClickListener {

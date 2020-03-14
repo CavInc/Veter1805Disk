@@ -46,6 +46,7 @@ public class FileModels {
 
     @Override
     public String toString() {
+        // перекроем метод что бы можно было использовать сортирову по паре тип записи + имя
         return ""+mTypeRecord+"-"+mName;
     }
 }

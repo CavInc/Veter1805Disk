@@ -38,6 +38,7 @@ import tk.cavinc.veter1805disk.utils.UriHelper;
 
 /**
  * Created by cav on 12.03.20.
+ * получение файла передаваемого через намерение ACTION_SEND
  */
 
 public class MySendActivity extends AppCompatActivity implements View.OnClickListener{
@@ -73,6 +74,7 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    // обрабатываем педанную ссылку на файл
     private void sendFile(Intent intent){
         String fileName = null;
         fileUri = (Uri) intent.getParcelableExtra(Intent.EXTRA_STREAM);
@@ -103,6 +105,7 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
         //cursor.close();
     }
 
+    // отправка файла на сервер
     private void sendNetFile(final File file, String fileName){
         OkHttpClient client = new OkHttpClient();
 
@@ -148,6 +151,14 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
             onBackPressed();
         }
         if (v.getId() == R.id.store_bt) {
+            /*
+               пришлось сделать копирование во временный файл т.е. на прямую из uri
+               нужный объект файл собрать не вышло.
+               так же есть интересный момент с именем файла.
+               из uri через ContentProvider имя возвращается только для тех типов файлов
+               что умеет обрабатывать система. к примеру для файла с .xls имя не вернется
+               а для .apk вернется... 
+             */
 
             String selectedFilePath = FilePath.getPath(this, fileUri);
             Log.d(TAG,"PT :"+selectedFilePath);
@@ -161,8 +172,6 @@ public class MySendActivity extends AppCompatActivity implements View.OnClickLis
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            DocumentFile doc = DocumentFile.fromSingleUri(this,fileUri);
 
             ParcelFileDescriptor inputPFD = null;
             try {

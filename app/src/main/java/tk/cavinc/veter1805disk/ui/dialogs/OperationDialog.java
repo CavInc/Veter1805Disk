@@ -13,15 +13,17 @@ import tk.cavinc.veter1805disk.utils.ConstantManager;
 
 /**
  * Created by cav on 08.03.20.
+ * Диалог выбора операций
  */
 
 public class OperationDialog extends DialogFragment implements View.OnClickListener{
 
     private static final String RECORD_TYPE = "RT";
-    private OperationDialogListener mDialogListener;
+    private OperationDialogListener mDialogListener; // слушатель событий для вызывающей активности
 
     private int recordType;
 
+    // делаем так для передачи параметров в DialogFragment
     public static OperationDialog newInstance(int recordType){
         Bundle args = new Bundle();
         args.putInt(RECORD_TYPE,recordType);
