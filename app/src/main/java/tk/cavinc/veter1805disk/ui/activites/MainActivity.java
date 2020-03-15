@@ -67,6 +67,9 @@ public class MainActivity extends AppCompatActivity {
     private OkHttpClient client;  // сетевой клиент для собственно работы с сервером
 
     private ActionBar actionToolbar;
+    private MenuItem storeMoveItem;
+    private MenuItem cancelMoveItem;
+    private MenuItem createDirItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +119,15 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.main_menu, menu);
+        createDirItem = menu.findItem(R.id.main_menu_create_folder);
+        storeMoveItem = menu.findItem(R.id.main_menu_store);
+        if (mDataManager.isModeMove()) {
+            storeMoveItem.setVisible(false);
+        }
+        cancelMoveItem = menu.findItem(R.id.main_menu_cancel_store);
+        if (mDataManager.isModeMove()) {
+            cancelMoveItem.setVisible(false);
+        }
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -157,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
             updateUI();
             if (level == "/") {
                 actionToolbar.setDisplayHomeAsUpEnabled(false);
+                actionToolbar.setSubtitle(null);
             }
         }
         if (item.getItemId() == R.id.main_menu_refresh) {
@@ -167,6 +180,21 @@ public class MainActivity extends AppCompatActivity {
             CreateDirDialog dirDialog = new CreateDirDialog();
             dirDialog.setDialogListener(mCreateDialogListener);
             dirDialog.show(getFragmentManager(),"CDD");
+        }
+        // сохраняем выбранный файл
+        if (item.getItemId() == R.id.main_menu_store) {
+            storeMoveItem.setVisible(false);
+            cancelMoveItem.setVisible(false);
+            createDirItem.setVisible(true);
+            storeMoveFile();
+        }
+        // отмена выбора объекта для перемещения
+        if (item.getItemId() == R.id.main_menu_cancel_store) {
+            storeMoveItem.setVisible(false);
+            cancelMoveItem.setVisible(false);
+            mDataManager.setMoveFile(null);
+            mDataManager.setModeMove(false);
+            createDirItem.setVisible(true);
         }
         return super.onOptionsItemSelected(item);
     }
@@ -244,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
                 getFiles(upLevel);
                 if (actionToolbar != null) {
                     actionToolbar.setDisplayHomeAsUpEnabled(true);
+                    actionToolbar.setSubtitle(upLevel);
                 }
             }
         }
@@ -283,6 +312,7 @@ public class MainActivity extends AppCompatActivity {
                     downloadFile();
                     break;
                 case R.id.op_move:
+                    moveFileRecord();
                     break;
                 case R.id.op_delete:
                     deleteFileRecord();
@@ -290,6 +320,43 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    // подготавливаемся к перемещению
+    private void moveFileRecord(){
+        Log.d(TAG,mDataManager.peekPathStack()+"/"+selectFileModel.getName());
+        mDataManager.setMoveFile(mDataManager.peekPathStack()+"/"+selectFileModel.getName());
+        storeMoveItem.setVisible(true);
+        cancelMoveItem.setVisible(true);
+        createDirItem.setVisible(false);
+    }
+
+    // перемещаем файл
+    private void storeMoveFile(){
+        String json = "{\"src\":\""+mDataManager.getMoveFile()+"\"," +
+                "\"dest\":\""+mDataManager.peekPathStack()+"\"}";
+        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json; charset=utf-8"),json);
+
+        Request request = new Request.Builder()
+                .url(ConstantManager.BASE_URL+ConstantManager.MOVE_ITEM_URL)
+                .post(requestBody)
+                .build();
+
+
+        Call call = client.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Request request, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Response response) throws IOException {
+                Log.d(TAG,response.body().string());
+                updateUI();
+            }
+        });
+
+    }
 
     // считываем файл с сервера используя okhttp
     private void downloadFile(){

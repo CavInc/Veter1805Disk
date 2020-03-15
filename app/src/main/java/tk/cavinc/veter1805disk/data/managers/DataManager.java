@@ -28,6 +28,9 @@ public class DataManager {
 
     private Stack<String> mPathStack;
 
+    private String mMoveFile; // перемещаемый файл
+    private boolean mModeMove = false; // флаг о том что перемещаем
+
     public static DataManager getInstance() {
         if (INSTANCE==null){
             INSTANCE = new DataManager();
@@ -100,5 +103,22 @@ public class DataManager {
 
     public int sizePathStack(){
         return mPathStack.size();
+    }
+
+    // имя перемещаемого объекта
+    public String getMoveFile() {
+        return mMoveFile;
+    }
+
+    public void setMoveFile(String moveFile) {
+        mMoveFile = moveFile;
+    }
+
+    public boolean isModeMove() {
+        return mModeMove;
+    }
+
+    public void setModeMove(boolean modeMove) {
+        mModeMove = modeMove;
     }
 }

@@ -7,6 +7,18 @@
         android:title="Новый каталог"
         app:showAsAction="ifRoom"/>
     <item
+        android:id="@+id/main_menu_store"
+        android:icon="@drawable/ic_archive_black_24dp"
+        android:title="Сохранить"
+        android:visible="false"
+        app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/main_menu_cancel_store"
+        android:icon="@drawable/ic_cancel_black_24dp"
+        android:visible="false"
+        android:title="Отмена перемешения"
+        app:showAsAction="ifRoom"/>
+    <item
         android:id="@+id/main_menu_refresh"
         android:title="Обновить"/>
 </menu>
