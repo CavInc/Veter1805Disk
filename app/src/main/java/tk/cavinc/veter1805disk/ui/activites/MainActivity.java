@@ -352,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Response response) throws IOException {
                 Log.d(TAG,response.body().string());
-                updateUI();
+                getFiles(mDataManager.peekPathStack());
             }
         });
 
